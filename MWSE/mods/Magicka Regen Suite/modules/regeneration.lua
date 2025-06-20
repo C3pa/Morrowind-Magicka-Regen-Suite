@@ -8,7 +8,7 @@ local function actorRegen()
 end
 
 local function playerRegen()
-    common.restoreIf(tes3.player, PC_REFRESH_RATE)
+	common.restoreIf(tes3.player, PC_REFRESH_RATE)
 end
 
 event.register(tes3.event.initialized, function()

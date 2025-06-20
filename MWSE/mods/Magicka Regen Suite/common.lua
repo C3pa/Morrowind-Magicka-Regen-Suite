@@ -19,6 +19,7 @@ local vampireScriptIDs = {
 	["mastriusscript"] = true,
 }
 
+-- TODO: these variables may need to be updated for different weathers
 local sunriseHour
 local nightStarHour
 
@@ -27,9 +28,6 @@ event.register(tes3.event.initialized, function()
 	local wc = tes3.worldController.weatherController
 	sunriseHour = wc.sunriseHour
 	nightStarHour = wc.sunsetHour + wc.sunsetDuration
-
-	-- Disable vanilla magicka restoration on resting since this mod has its own calculation
-	tes3.findGMST(tes3.gmst.fRestMagicMult).value = 0
 end)
 
 --- Returns `true` if the Player is in interior cell, excluding interiors behaving as exterior.
@@ -43,10 +41,10 @@ end
 ---@param hour number?
 ---@return boolean result
 local function isNight(hour)
-    hour = hour or tes3.worldController.hour.value
-    if (hour < sunriseHour or hour >= nightStarHour) then
-        return true
-    end
+	hour = hour or tes3.worldController.hour.value
+	if (hour < sunriseHour or hour >= nightStarHour) then
+		return true
+	end
 
 	return false
 end
@@ -55,20 +53,25 @@ end
 ---@param ref tes3reference Can be player, or NPC.
 ---@return boolean result
 local function isVampire(ref)
-	if ref == tes3.player
-		and	tes3.findGlobal("PCVampire").value == 1 then
+	if ref == tes3.player and tes3.findGlobal("PCVampire").value == 1 then
 
 		return true
-	else
-		local obj = ref.baseObject and ref.baseObject or ref.object
-
-		return (
-			obj.head and (obj.head.vampiric and true or false) or
-			tes3.isAffectedBy({ reference = ref, effect = tes3.effect.vampirism }) or
-			ref.object.script and vampireScriptIDs[ref.object.script.id:lower()] or
-			false
-		)
 	end
+
+	local obj = ref.baseObject and ref.baseObject or ref.object
+	if obj.head.vampiric then
+		return true
+	end
+
+	if tes3.isAffectedBy({ reference = ref, effect = tes3.effect.vampirism }) then
+		return true
+	end
+
+	if obj.script and vampireScriptIDs[obj.script.id:lower()] then
+		return true
+	end
+
+	return false
 end
 
 --- Returns `true` if the `ref` is stunted
@@ -82,13 +85,11 @@ end
 ---@param reference tes3reference
 ---@return number
 local function getMaxMagicka(reference)
-	return (
-		reference.mobile.magicka.base +
+	return reference.mobile.magicka.base +
 		tes3.getEffectMagnitude({
 			reference = reference,
 			effect = tes3.effect.fortifyMagicka
 		})
-	)
 end
 
 -- We store previously calculated values here not to calculate math.log() repeatedly.
@@ -141,7 +142,7 @@ local function getMagickaRestoredPerSecond(actor, base)
 		if not restored then
 			restoredCache.logarithmicINT[actor.intelligence.current] = math.max(
 				math.log(math.max(actor.intelligence.current, 0,01), config.INTBase)
-				 * config.INTScale - config.INTb,
+				* config.INTScale - config.INTb,
 				0
 			)
 			restored = restoredCache.logarithmicINT[actor.intelligence.current]
@@ -174,41 +175,44 @@ end
 ---@return number restoredAmount
 function common.restoreIf(ref, secondsPassed, alot)
 	secondsPassed = secondsPassed or 1
-    if stunted(ref) then return 0 end
+	if stunted(ref) then return 0 end
 
-    local base = getMaxMagicka(ref)
-	local current = ref.mobile.magicka.current
+	local base = getMaxMagicka(ref)
+	local mobile = ref.mobile --[[@as tes3mobileActor]]
+	local magicka = mobile.magicka
+	local current = magicka.current
 	---@diagnostic disable-next-line param-type-mismatch
-    local amount = getMagickaRestoredPerSecond(ref.mobile, base) * secondsPassed
+	local amount = getMagickaRestoredPerSecond(mobile, base) * secondsPassed
 
 	if alot then
 		-- Don't restore more than maximum magicka
-		if ref.mobile.magicka.current >= base then return 0 end
+		if current >= base then return 0 end
 
 		amount = math.min(current + amount, base)
-		tes3.setStatistic({ reference = ref, name = "magicka", current = amount })
-	else
-		if config.vampireChanges and isVampire(ref) then
-			if PCinInterior() or isNight() then
-				amount = amount * ( 1 + config.nightBonus )
-			else
-				amount = amount * ( 1 - config.dayPenalty )
-			end
-		end
-		-- Don't restore more than maximum magicka
-		if (current >= base and amount > 0) then return 0 end
-
-		-- Clamp positive total values to not overflow
-		-- Negative values shouldn't be clamped. If for example, a character just had Fortify Magicka effect worn off,
-		-- then their current magicka can be higher than maximum magicka. In such scenario, maxMagicka - currentMagicka
-		-- could be more negative than total yielding wrong result
-		if amount > 0 then
-			amount = math.min(amount, (base - current))
-		end
-
-		tes3.modStatistic({ reference = ref, name = "magicka", current = amount })
+		tes3.setStatistic({ reference = ref, statistic = magicka, current = amount })
+		return amount
 	end
 
+
+	if config.vampireChanges and isVampire(ref) then
+		if PCinInterior() or isNight() then
+			amount = amount * ( 1 + config.nightBonus )
+		else
+			amount = amount * ( 1 - config.dayPenalty )
+		end
+	end
+	-- Don't restore more than maximum magicka
+	if (current >= base and amount > 0) then return 0 end
+
+	-- Clamp positive total values to not overflow
+	-- Negative values shouldn't be clamped. If for example, a character just had Fortify Magicka effect worn off,
+	-- then their current magicka can be higher than maximum magicka. In such scenario, maxMagicka - currentMagicka
+	-- could be more negative than total yielding wrong result
+	if amount > 0 then
+		amount = math.min(amount, (base - current))
+	end
+
+	tes3.modStatistic({ reference = ref, statistic = magicka, current = amount })
 	return amount
 end
 
@@ -222,16 +226,16 @@ end
 ---@return tes3reference[]
 function common.getActors(includePlayer)
 	---@diagnostic disable-next-line return-type-mismatch
-    return coroutine.wrap(function()
-        for _, cell in pairs(tes3.getActiveCells()) do
-            for ref in cell:iterateReferences({ tes3.objectType.npc, tes3.objectType.creature }) do
-                coroutine.yield(ref)
-            end
-	   end
-        if includePlayer then
-            coroutine.yield(tes3.player)
-        end
-    end)
+	return coroutine.wrap(function()
+		for _, cell in pairs(tes3.getActiveCells()) do
+			for ref in cell:iterateReferences({ tes3.objectType.npc, tes3.objectType.creature }) do
+				coroutine.yield(ref)
+			end
+		end
+		if includePlayer then
+			coroutine.yield(tes3.player)
+		end
+	end)
 end
 
 ---Restores magicka to all actors in active cells excluding the player
@@ -242,7 +246,7 @@ function common.processActors(secondsPassed, alot)
 		if actor.mobile then
 			common.restoreIf(actor, secondsPassed, alot)
 		end
-    end
+	end
 end
 
 return common

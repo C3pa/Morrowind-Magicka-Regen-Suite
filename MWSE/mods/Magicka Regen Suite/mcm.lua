@@ -8,14 +8,14 @@ local function newline(component)
 end
 
 local function addSideBar(component)
-    component.sidebar:createInfo{ text = text.sideBarDefault }
+	component.sidebar:createInfo{ text = text.sideBarDefault }
 	component.sidebar:createHyperLink{
-        text = "Made by C3pa",
-        url = "https://www.nexusmods.com/users/37172285?tab=user+files",
-        postCreate = function(self)
+		text = "Made by C3pa",
+		url = "https://www.nexusmods.com/users/37172285?tab=user+files",
+		postCreate = function(self)
 			self.elements.info.layoutOriginFractionX = 0.5
 		end,
-    }
+	}
 end
 
 
