@@ -48,7 +48,6 @@ local function registerModConfig()
 	do -- Main settings page
 		local page = template:createSideBarPage({
 			label = "Main Settings",
-			noScroll = true,
 			showReset = true
 		})
 		addSideBar(page)
@@ -127,6 +126,11 @@ local function registerModConfig()
 			min = 0,
 			max = 1,
 			configKey = "nightBonus"
+		})
+
+		newline(page)
+		page:createLogLevelOptions({
+			configKey = "logLevel"
 		})
 	end
 
@@ -282,6 +286,8 @@ local function registerModConfig()
 			description = text.INTScale,
 			min = 0.7,
 			max = 1.5,
+			step = 0.01,
+			jump = 0.05,
 			decimalPlaces = 1,
 			configKey = "INTScale"
 		})

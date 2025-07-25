@@ -4,7 +4,7 @@ local fileName = "Magicka Regen Suite"
 
 ---@class magickaRegenSuite.config
 ---@field version string A [semantic version](https://semver.org/).
----@field default template.config Access to the default config can be useful in the MCM.
+---@field default magickaRegenSuite.config Access to the default config can be useful in the MCM.
 ---@field fileName string
 local default = {
 	-- General Settings
@@ -15,7 +15,7 @@ local default = {
 	vampireChanges = true,
 	dayPenalty = 1.25, -- TODO: set to 0.25
 	nightBonus = 0.25,
-	logLevel = mwse.logLevel.info,
+	logLevel = mwse.logLevel.info --[[@as mwseLogger.logLevel]],
 
 	-- Morrowind Regeneration
 	baseMorrowind = 5,
