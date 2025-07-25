@@ -5,9 +5,8 @@ local common = require("Magicka Regen Suite.common")
 ---@param e calcRestInterruptEventData
 local function waitMagicka(e)
 	local hoursPassed = tes3.mobilePlayer.restHoursRemaining
-
-	if e.count > 0 and e.hour > 1 then
-		-- The sleep was interrupted
+	local restInterrupted = e.count > 0 and e.hour > 1
+	if restInterrupted then
 		hoursPassed = hoursPassed - (e.hour - 1)
 	end
 

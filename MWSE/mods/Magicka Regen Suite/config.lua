@@ -3,6 +3,8 @@ local regenerationType = require("Magicka Regen Suite.regenerationType")
 local this = {}
 
 local configFile = "Magicka Regen Suite"
+
+---@class magickaRegenSuiteConfigDefault
 local defaultConfig = {
 	-- General Settings
 	regenerationFormula = 0,
@@ -12,6 +14,7 @@ local defaultConfig = {
 	vampireChanges = true,
 	dayPenalty = 1.25, -- TODO: set to 0.25
 	nightBonus = 0.25,
+	logLevel = mwse.logLevel.info,
 
 	-- Morrowind Regeneration
 	baseMorrowind = 5,
