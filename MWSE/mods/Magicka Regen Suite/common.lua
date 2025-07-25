@@ -1,5 +1,5 @@
 local regenerationFormula = require("Magicka Regen Suite.regenerationType")
-local config = require("Magicka Regen Suite.config").config
+local config = require("Magicka Regen Suite.config")
 
 local log = mwse.Logger.new()
 
