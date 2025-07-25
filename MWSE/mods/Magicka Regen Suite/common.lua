@@ -96,17 +96,16 @@ local function getMagickaRestoredPerSecond(actor, base)
 	local formula = config.regenerationFormula
 
 	if formula == regenerationFormula.morrowind then
-		restored = math.max(0,
-			math.log(math.max(actor.willpower.current, 0.01), config.baseMorrowind) * config.scaleMorrowind - config.capMorrowind
-		)
+		local logTerm = math.log(math.max(actor.willpower.current, 0.01), config.baseMorrowind)
+		restored = (logTerm * config.scaleMorrowind - config.capMorrowind) * actor:getFatigueTerm()
+		restored = math.max(0, restored)
 
 		if actor.inCombat then
 			restored = restored * config.combatPenaltyMorrowind
 		end
-
 	elseif formula == regenerationFormula.oblivion then
-		restored = base * 0.01 * (config.magickaReturnBaseOblivion + config.magickaReturnMultOblivion * actor.willpower.current)
-
+		restored = config.magickaReturnBaseOblivion + config.magickaReturnMultOblivion * actor.willpower.current
+		restored = restored * base * 0.01
 	elseif formula == regenerationFormula.skyrim then
 		restored = base * config.magickaReturnSkyrim
 
@@ -114,9 +113,9 @@ local function getMagickaRestoredPerSecond(actor, base)
 			restored = restored * config.combatPenaltySkyrim
 		end
 	elseif formula == regenerationFormula.logarithmicINT then
-		restored = math.max(0,
-			math.log(math.max(actor.intelligence.current, 0.01), config.INTBase) * config.INTScale - config.INTb
-		)
+		local logTerm = math.log(math.max(actor.intelligence.current, 0.01), config.INTBase)
+		restored = logTerm * config.INTScale - config.INTCap
+		restored = math.max(0, restored)
 
 		if config.INTApplyCombatPenalty and actor.inCombat then
 			restored = restored * config.INTCombatPenalty
