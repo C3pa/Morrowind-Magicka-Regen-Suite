@@ -10,12 +10,6 @@ local log = mwse.Logger.new()
 
 local common = {}
 
----@return boolean result
-local function isPCinInterior()
-	local cell = tes3.player.cell
-	return (cell.isInterior and not cell.behavesAsExterior)
-end
-
 local function getSunriseNightStartHours()
 	local wc = tes3.worldController.weatherController
 	local nightStartHour = wc.sunsetHour + wc.sunsetDuration
@@ -68,6 +62,20 @@ local function isVampire(ref)
 	end
 
 	return false
+end
+
+---@param reference tes3reference
+local function getVampireMod(reference)
+	if not config.vampireChanges or not isVampire(reference) then
+		return 1
+	end
+
+	if not tes3.player.cell.isOrBehavesAsExterior or isNight() then
+		return 1 + config.nightBonus
+	end
+
+	-- We are outside in broad daylight.
+	return 1 - config.dayPenalty
 end
 
 ---@param ref tes3reference
@@ -144,41 +152,35 @@ function common.restoreIf(ref, secondsPassed, restingOrTravelling)
 	secondsPassed = secondsPassed or 1
 	if isStunted(ref) then return 0 end
 
-	local base = getMaxMagicka(ref)
+	local maxMagicka = getMaxMagicka(ref)
 	local mobile = ref.mobile --[[@as tes3mobileActor]]
 	local magickaStat = mobile.magicka
 	local currentMagicka = magickaStat.current
-	--@diagnostic disable-next-line param-type-mismatch
-	local amount = getMagickaRestoredPerSecond(mobile, base) * secondsPassed
+	local amount = getMagickaRestoredPerSecond(mobile, maxMagicka) * secondsPassed
 
 	if restingOrTravelling then
 		-- Don't restore more than maximum magicka
-		if currentMagicka >= base then return 0 end
+		if currentMagicka >= maxMagicka then return 0 end
 
-		amount = math.min(currentMagicka + amount, base)
+		amount = math.min(currentMagicka + amount, maxMagicka)
 		tes3.setStatistic({ reference = ref, statistic = magickaStat, current = amount })
 		return amount
 	end
 
+	amount = amount * getVampireMod(ref)
 
-	if config.vampireChanges and isVampire(ref) then
-		if isPCinInterior() or isNight() then
-			amount = amount * ( 1 + config.nightBonus )
-		else
-			amount = amount * ( 1 - config.dayPenalty )
-		end
-	end
 	-- Don't restore more than maximum magicka
-	if (currentMagicka >= base and amount > 0) then return 0 end
+	if (currentMagicka >= maxMagicka and amount > 0) then return 0 end
 
 	-- Clamp positive total values to not overflow
 	-- Negative values shouldn't be clamped. If for example, a character just had Fortify Magicka effect worn off,
 	-- then their current magicka can be higher than maximum magicka. In such scenario, maxMagicka - currentMagicka
 	-- could be more negative than total yielding wrong result
 	if amount > 0 then
-		amount = math.min(amount, (base - currentMagicka))
+		amount = math.min(amount, (maxMagicka - currentMagicka))
 	end
 
+	log:trace("Restoring %.2f to %s", amount, ref.id)
 	tes3.modStatistic({ reference = ref, statistic = magickaStat, current = amount })
 	return amount
 end
