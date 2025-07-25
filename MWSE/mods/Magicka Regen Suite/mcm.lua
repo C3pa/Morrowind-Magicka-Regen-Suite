@@ -1,293 +1,323 @@
 local config = require("Magicka Regen Suite.config")
 local text = require("Magicka Regen Suite.mcmText")
-local mcmConfig = config.mcmGetConfig()
 
-
-local function newline(component)
-	component:createInfo{ text = "\n" }
-end
-
-local function addSideBar(component)
-	component.sidebar:createInfo{ text = text.sideBarDefault }
-	component.sidebar:createHyperLink{
-		text = "Made by C3pa",
-		url = "https://www.nexusmods.com/users/37172285?tab=user+files",
-		postCreate = function(self)
-			self.elements.info.layoutOriginFractionX = 0.5
-		end,
-	}
-end
-
-
-local template = mwse.mcm.createTemplate{
-	name = "Magicka Regen Suite",
-	headerImagePath = "MWSE/mods/Magicka Regen Suite/MCMHeader.tga",
-	onClose = function()
-		config.mcmSaveConfig(mcmConfig)
-	end
+local authors = {
+	{
+		name = "C3pa",
+		url = "https://next.nexusmods.com/profile/C3pa/mods",
+	},
 }
-template:register()
 
-do	-- Settings
-	do	-- Main settings page
-		local mainSettingsPage = template:createSideBarPage{ label = "Main Settings" }
-		addSideBar(mainSettingsPage)
-		mainSettingsPage.noScroll = true
+---@param component mwseMCMCategory
+local function newline(component)
+	component:createInfo({ text = "\n" })
+end
 
-		do		-- General Settings Block
-			local general = mainSettingsPage:createCategory{
-				label = "\nGeneral",
-				description = text.regenerationTypesDescription
-			}
+--- @param self mwseMCMInfo|mwseMCMHyperlink
+local function center(self)
+	self.elements.info.absolutePosAlignX = 0.5
+end
 
-			general:createInfo{
-				text = "The magicka regeneration formula I want to use...",
-				description = text.regenerationFormulasDescription
-			}
-
-			general:createDropdown{
-				options = text.regenerationFormula,
-				description = text.regenerationFormulasDescription,
-				variable = mwse.mcm.createTableVariable({ id = "regenerationFormula", table = mcmConfig })
-			}
-
-			newline(general)
-			general:createSlider{
-				label = "Regeneration speed modifier: %s %%",
-				description = text.regenerationSpeedModifier,
-				min = 1,
-				max = 200,
-				step = 1,
-				jump = 10,
-				variable = mwse.mcm.createTableVariable({ id = "regSpeedModifier", table = mcmConfig })
-			}
-
-			newline(general)
-			general:createOnOffButton{
-				label = "Use Magicka speed decay feature?",
-				variable = mwse.mcm.createTableVariable({ id = "useDecay", table = mcmConfig }),
-				description = text.decayDescription
-			}
-
-			newline(general)
-			general:createSlider{
-				label = "exp = %s",
-				description = text.decayDescription,
-				min = 7,
-				max = 100,
-				step = 1,
-				jump = 10,
-				variable = mwse.mcm.createTableVariable({ id = "decayExp", table = mcmConfig })
-			}
-		end
-		do		-- Vampires Settings Block
-			local vampire = mainSettingsPage:createCategory{
-				label = "\nVampire regeneration settings",
-				description = text.vampireChanges
-			}
-
-			vampire:createOnOffButton{
-				label = "Changed magicka regeneration speed for Vampires?",
-				variable = mwse.mcm.createTableVariable({ id = "vampireChanges", table = mcmConfig }),
-				description = text.vampireChanges
-			}
-
-			newline(vampire)
-			vampire:createSlider{
-				label = "Day penalty to regeneration: %s %%",
-				description = text.vampireDayPenalty,
-				min = 0,
-				max = 200,
-				step = 5,
-				jump = 20,
-				variable = mwse.mcm.createTableVariable({ id = "dayPenalty", table = mcmConfig })
-			}
-
-			newline(vampire)
-			vampire:createSlider{
-				label = "Night regeneration bonus: %s %%",
-				description = text.vampireNightBonus,
-				min = 0,
-				max = 100,
-				step = 5,
-				jump = 20,
-				variable = mwse.mcm.createTableVariable({ id = "nightBonus", table = mcmConfig })
-			}
-		end
+---@param container mwseMCMSideBarPage
+local function addSideBar(container)
+	container.sidebar:createInfo({
+		text = text.sideBarDefault,
+		postCreate = center
+	})
+	for _, author in ipairs(authors) do
+		container.sidebar:createHyperlink({
+			text = author.name,
+			url = author.url,
+			postCreate = center,
+		})
 	end
-	do	-- Morrowind style regeneration settings page
-		local morrowindSettingsPage = template:createSideBarPage{ label = "Morrowind" }
-		addSideBar(morrowindSettingsPage)
+end
 
-		morrowindSettingsPage:createCategory{ label = "\nFormula:\n" }
-		morrowindSettingsPage:createInfo{ text = text.morrowindFormula }
 
-		morrowindSettingsPage:createSlider{
+local function registerModConfig()
+	local template = mwse.mcm.createTemplate({
+		name = "Magicka Regen Suite",
+		headerImagePath = "MWSE/mods/Magicka Regen Suite/MCMHeader.tga",
+		config = config,
+		defaultConfig = config.default,
+		showDefaultSetting = true
+	})
+	template:register()
+	template:saveOnClose(config.fileName, config)
+
+	do -- Main settings page
+		local page = template:createSideBarPage({
+			label = "Main Settings",
+			noScroll = true,
+			showReset = true
+		})
+		addSideBar(page)
+
+		local generalCategory = page:createCategory({
+			label = "\nGeneral",
+			description = text.regenerationTypesDescription
+		})
+
+		generalCategory:createInfo({
+			text = "The magicka regeneration formula I want to use...",
+			description = text.regenerationFormulasDescription
+		})
+
+		generalCategory:createDropdown({
+			options = text.regenerationFormula,
+			description = text.regenerationFormulasDescription,
+			configKey = "regenerationFormula"
+		})
+
+		newline(generalCategory)
+		generalCategory:createPercentageSlider({
+			label = "Regeneration speed modifier",
+			description = text.regenerationSpeedModifier,
+			min = 0.01,
+			max = 2,
+			configKey = "regSpeedModifier"
+		})
+
+		local decay = page:createCategory({
+			description = text.decayDescription
+		})
+
+		decay:createOnOffButton({
+			label = "Use Magicka speed decay feature?",
+			description = text.decayDescription,
+			configKey = "useDecay"
+		})
+
+		newline(generalCategory)
+		decay:createSlider({
+			label = "exp = %s",
+			description = text.decayDescription,
+			min = 0.7,
+			max = 10,
+			step = 0.1,
+			jump = 1,
+			decimalPlaces = 1,
+			configKey = "decayExp"
+		})
+
+		local vampireSettings = page:createCategory({
+			label = "\nVampire regeneration settings",
+			description = text.vampireChanges
+		})
+
+		vampireSettings:createOnOffButton({
+			label = "Changed magicka regeneration speed for Vampires?",
+			description = text.vampireChanges,
+			configKey = "vampireChanges"
+		})
+
+		newline(vampireSettings)
+		vampireSettings:createPercentageSlider({
+			label = "Day penalty to regeneration",
+			description = text.vampireDayPenalty,
+			min = 0,
+			max = 2,
+			configKey = "dayPenalty"
+		})
+
+		newline(vampireSettings)
+		vampireSettings:createPercentageSlider({
+			label = "Night regeneration bonus",
+			description = text.vampireNightBonus,
+			min = 0,
+			max = 1,
+			configKey = "nightBonus"
+		})
+	end
+
+	do -- Morrowind style regeneration settings page
+		local page = template:createSideBarPage({
+			label = "Morrowind",
+			showReset = true,
+		})
+		addSideBar(page)
+
+		page:createCategory({ label = "\nFormula:" })
+		page:createInfo({ text = text.morrowindFormula })
+
+		page:createSlider({
 			label = "base = %s",
 			description = text.morrowindBase,
-			min = 25,
-			max = 150,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "baseMorrowind", table = mcmConfig }),
-		}
+			min = 2.5,
+			max = 15,
+			step = 0.1,
+			jump = 1,
+			decimalPlaces = 1,
+			configKey = "baseMorrowind"
+		})
 
-		newline(morrowindSettingsPage)
-		morrowindSettingsPage:createSlider{
+		newline(page)
+		page:createSlider({
 			label = "scale = %s",
 			description = text.morrowindScale,
-			min = 10,
-			max = 25,
-			step = 1,
-			jump = 5,
-			variable = mwse.mcm.createTableVariable({ id = "scaleMorrowind", table = mcmConfig }),
-		}
+			min = 1.0,
+			max = 2.5,
+			step = 0.1,
+			jump = 0.5,
+			decimalPlaces = 1,
+			configKey = "scaleMorrowind"
+		})
 
-		newline(morrowindSettingsPage)
-		morrowindSettingsPage:createSlider{
+		newline(page)
+		page:createSlider({
 			label = "cap = %s",
 			description = text.morrowindCap,
-			min = 0,
-			max = 50,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "capMorrowind", table = mcmConfig }),
-		}
+			min = 0.0,
+			max = 5.0,
+			step = 0.1,
+			jump = 0.5,
+			decimalPlaces = 1,
+			configKey = "capMorrowind"
+		})
 
-		newline(morrowindSettingsPage)
-		morrowindSettingsPage:createSlider{
-			label = "Combat Penalty: %s %%",
+		newline(page)
+		page:createPercentageSlider({
+			label = "Combat Penalty",
 			description = text.combatPenalty,
 			min = 0,
-			max = 100,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "combatPenaltyMorrowind", table = mcmConfig }),
-		}
+			max = 1,
+			configKey = "combatPenaltyMorrowind"
+		})
 
-		morrowindSettingsPage:createInfo{ text = text.fatigueTermDescription }
+		page:createInfo({ text = text.fatigueTermDescription })
 	end
-	do	-- Oblivion style regeneration settings page
-		local oblivionSettingsPage = template:createSideBarPage{ label = "Oblivion" }
-		addSideBar(oblivionSettingsPage)
-		oblivionSettingsPage.noScroll = true
 
-		oblivionSettingsPage:createCategory{ label = "\nFormula:\n"}
-		oblivionSettingsPage:createInfo{ text = text.oblivionFormula }
+	do -- Oblivion style regeneration settings page
+		local page = template:createSideBarPage({
+			label = "Oblivion",
+			noScroll = true,
+			showReset = true,
+			-- We need custom default value descriptions on this page
+			showDefaultSetting = false
+		})
+		addSideBar(page)
 
-		oblivionSettingsPage:createSlider{
-			label = "a = %s",
+		page:createCategory({ label = "\nFormula:"})
+		page:createInfo({ text = text.oblivionFormula })
+
+		page:createSlider({
+			label = "a = %s%%",
 			description = text.oblivionASlider,
 			min = 0,
-			max = 150,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "magickaReturnBaseOblivion", table = mcmConfig }),
-		}
+			max = 1.5,
+			step = 0.01,
+			jump = 0.1,
+			decimalPlaces = 2,
+			configKey = "magickaReturnBaseOblivion"
+		})
 
-		newline(oblivionSettingsPage)
-		oblivionSettingsPage:createSlider{
+		newline(page)
+		page:createPercentageSlider({
 			label = "b = %s",
 			description = text.oblivionBSlider,
-			min = 1,
-			max = 100,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "magickaReturnMultOblivion", table = mcmConfig }),
-		}
+			min = 0.0,
+			max = 0.1,
+			step = 0.01,
+			jump = 0.05,
+			decimalPlaces = 1,
+			configKey = "magickaReturnMultOblivion"
+		})
 	end
-	do	-- Skyrim style regeneration settings page
-		local skyrimSettingsPage = template:createSideBarPage{ label = "Skyrim" }
-		addSideBar(skyrimSettingsPage)
-		skyrimSettingsPage.noScroll = true
 
-		skyrimSettingsPage:createCategory{ label = "\nFormula:\n"}
-		skyrimSettingsPage:createInfo{ text = text.skyrimFormula }
+	do -- Skyrim style regeneration settings page
+		local page = template:createSideBarPage({
+			label = "Skyrim",
+			noScroll = true,
+			showReset = true
+		})
+		addSideBar(page)
 
-		skyrimSettingsPage:createSlider{
+		page:createCategory({ label = "\nFormula:"})
+		page:createInfo({ text = text.skyrimFormula })
+
+		page:createPercentageSlider({
 			label = "a = %s",
 			description = text.skyrimASlider,
-			min = 1,
-			max = 100,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "magickaReturnSkyrim", table = mcmConfig }),
-		}
+			min = 0.0,
+			max = 0.1,
+			decimalPlaces = 1,
+			configKey = "magickaReturnSkyrim"
+		})
 
-		newline(skyrimSettingsPage)
-		skyrimSettingsPage:createSlider{
-			label = "Combat Penalty: %s %%",
+		newline(page)
+		page:createPercentageSlider({
+			label = "Combat Penalty",
 			description = text.skyrimCombatPenalty,
 			min = 0,
-			max = 100,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "combatPenaltySkyrim", table = mcmConfig }),
-		}
+			max = 1,
+			configKey = "combatPenaltySkyrim"
+		})
 	end
-	do -- Logarithimic INT settings page
-		local logarithmicINTPage = template:createSideBarPage{ label = "Logarithimic INT" }
+
+	do -- Logarithmic INT settings page
+		local logarithmicINTPage = template:createSideBarPage({
+			label = "Logarithmic INT",
+			showReset = true
+		})
 		addSideBar(logarithmicINTPage)
 
-		logarithmicINTPage:createCategory{
-			label = "\nLogarithmic Intelligence formula\n",
+		logarithmicINTPage:createCategory({
+			label = "\nLogarithmic Intelligence formula",
 			description = text.INTDescription
-		}
-		logarithmicINTPage:createInfo{ text = text.INTFormula }
+		})
+		logarithmicINTPage:createInfo({ text = text.INTFormula })
 
-		logarithmicINTPage:createSlider{
+		logarithmicINTPage:createSlider({
 			label = "base = %s",
 			description = text.INTBase,
-			min = 20,
-			max = 30,
-			step = 1,
-			jump = 1,
-			variable = mwse.mcm.createTableVariable({ id = "INTBase", table = mcmConfig })
-		}
+			min = 2,
+			max = 3,
+			decimalPlaces = 1,
+			configKey = "INTBase"
+		})
 
 		newline(logarithmicINTPage)
-		logarithmicINTPage:createSlider{
+		logarithmicINTPage:createSlider({
 			label = "scale = %s",
 			description = text.INTScale,
-			min = 7,
-			max = 15,
-			step = 1,
-			jump = 1,
-			variable = mwse.mcm.createTableVariable({ id = "INTScale", table = mcmConfig })
-		}
+			min = 0.7,
+			max = 1.5,
+			decimalPlaces = 1,
+			configKey = "INTScale"
+		})
 
 		newline(logarithmicINTPage)
-		logarithmicINTPage:createSlider{
+		logarithmicINTPage:createSlider({
 			label = "cap = %s",
 			description = text.INTCap,
 			min = 0,
-			max = 60,
-			step = 1,
-			jump = 5,
-			variable = mwse.mcm.createTableVariable({ id = "INTCap", table = mcmConfig })
-		}
+			max = 6,
+			decimalPlaces = 1,
+			configKey = "INTCap"
+		})
 
 		newline(logarithmicINTPage)
-		logarithmicINTPage:createYesNoButton{
+		logarithmicINTPage:createYesNoButton({
 			label = "Slower magicka regeneration while in combat?",
 			description = text.combatPenaltyGeneral,
-			variable = mwse.mcm.createTableVariable({ id = "INTApplyCombatPenalty", table = mcmConfig })
-		}
-		logarithmicINTPage:createSlider{
-			label = "Combat Penalty: %s %%",
+			configKey = "INTApplyCombatPenalty"
+		})
+
+		logarithmicINTPage:createPercentageSlider({
+			label = "Combat Penalty",
 			description = text.combatPenalty,
 			min = 0,
-			max = 100,
-			step = 1,
-			jump = 10,
-			variable = mwse.mcm.createTableVariable({ id = "INTCombatPenalty", table = mcmConfig })
-		}
+			max = 1,
+			configKey = "INTCombatPenalty"
+		})
 
 		newline(logarithmicINTPage)
 		logarithmicINTPage:createYesNoButton{
 			label = "Scale magicka regeneration speed with current fatigue?",
-			description = text.fatigueScaling,
-			variable = mwse.mcm.createTableVariable({ id = "INTUseFatigueTerm", table = mcmConfig })
+			description = text.fatigueTermDescription,
+			configKey = "INTUseFatigueTerm"
 		}
 	end
 end
+
+event.register(tes3.event.modConfigReady, registerModConfig)
