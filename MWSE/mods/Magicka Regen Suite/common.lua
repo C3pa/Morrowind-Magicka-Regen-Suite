@@ -1,6 +1,8 @@
 local regenerationFormula = require("Magicka Regen Suite.regenerationType")
 local config = require("Magicka Regen Suite.config").config
 
+local log = mwse.Logger.new()
+
 -- TODO
 -- Fun fact: Fortify Attribute apparently affects the base value of the statistic, not just the current value.
 -- Not sure if Fortify Skill works the same way. The only way to get the actual base value of an attribute is
@@ -8,7 +10,33 @@ local config = require("Magicka Regen Suite.config").config
 
 local common = {}
 
+---@return boolean result
+local function isPCinInterior()
+	local cell = tes3.player.cell
+	return (cell.isInterior and not cell.behavesAsExterior)
+end
 
+local function getSunriseNightStartHours()
+	local wc = tes3.worldController.weatherController
+	local nightStartHour = wc.sunsetHour + wc.sunsetDuration
+	return wc.sunsetHour, nightStartHour
+end
+
+--- Returns true if the `hour` is during night. If no `hour` is passed, the current in-game hour will be used.
+---@param hour number?
+---@return boolean result
+local function isNight(hour)
+	hour = hour or tes3.worldController.hour.value
+	local sunrise, nightStart = getSunriseNightStartHours()
+	if (hour < sunrise or hour >= nightStart) then
+		return true
+	end
+
+	return false
+end
+
+-- The "PCVampire" global var is set to 1 when the player is considered a vampire.
+local PCVampireValue = 1
 local vampireScriptIDs = {
 	["vampire_berne"] = true,
 	["vampire_quarra"] = true,
@@ -19,42 +47,10 @@ local vampireScriptIDs = {
 	["mastriusscript"] = true,
 }
 
--- TODO: these variables may need to be updated for different weathers
-local sunriseHour
-local nightStarHour
-
-
-event.register(tes3.event.initialized, function()
-	local wc = tes3.worldController.weatherController
-	sunriseHour = wc.sunriseHour
-	nightStarHour = wc.sunsetHour + wc.sunsetDuration
-end)
-
---- Returns `true` if the Player is in interior cell, excluding interiors behaving as exterior.
----@return boolean result
-local function PCinInterior()
-	local cell = tes3.player.cell
-	return (cell.isInterior and not cell.behavesAsExterior)
-end
-
---- Returns true if the `hour` is during night. If no `hour` is passed, the current in-game hour will be used.
----@param hour number?
----@return boolean result
-local function isNight(hour)
-	hour = hour or tes3.worldController.hour.value
-	if (hour < sunriseHour or hour >= nightStarHour) then
-		return true
-	end
-
-	return false
-end
-
---- Returns `true` if `ref` is a Vampire.
 ---@param ref tes3reference Can be player, or NPC.
 ---@return boolean result
 local function isVampire(ref)
-	if ref == tes3.player and tes3.findGlobal("PCVampire").value == 1 then
-
+	if ref == tes3.player and tes3.findGlobal("PCVampire").value == PCVampireValue then
 		return true
 	end
 
@@ -74,10 +70,9 @@ local function isVampire(ref)
 	return false
 end
 
---- Returns `true` if the `ref` is stunted
 ---@param ref tes3reference
 ---@return boolean
-local function stunted(ref)
+local function isStunted(ref)
 	return tes3.isAffectedBy({ reference = ref, effect = tes3.effect.stuntedMagicka })
 end
 
@@ -92,61 +87,36 @@ local function getMaxMagicka(reference)
 		})
 end
 
--- We store previously calculated values here not to calculate math.log() repeatedly.
-local restoredCache = {
-	morrowind = {},
-	logarithmicINT = {}
-}
-
 --- Returns the amount of magicka a reference would regenerate per second.
----@param actor tes3mobileNPC|tes3mobilePlayer
+---@param actor tes3mobileActor
 ---@param base number The actor's base magicka.
 ---@return number result
 local function getMagickaRestoredPerSecond(actor, base)
 	local restored
+	local formula = config.regenerationFormula
 
-	if config.regenerationFormula == regenerationFormula.morrowind then
-		restored = restoredCache.morrowind[actor.willpower.current]
-		if not restored then
-			restoredCache.morrowind[actor.willpower.current] = math.max(
-				math.log(math.max(actor.willpower.current, 0.01), config.baseMorrowind)
-				* config.scaleMorrowind - config.capMorrowind,
-				0
-			)
-			restored = restoredCache.morrowind[actor.willpower.current]
-		end
+	if formula == regenerationFormula.morrowind then
+		restored = math.max(0,
+			math.log(math.max(actor.willpower.current, 0.01), config.baseMorrowind) * config.scaleMorrowind - config.capMorrowind
+		)
 
 		if actor.inCombat then
 			restored = restored * config.combatPenaltyMorrowind
 		end
 
-	elseif config.regenerationFormula == regenerationFormula.oblivion then
-		restored = (
-			base * 0.01
-			* (config.magickaReturnBaseOblivion + config.magickaReturnMultOblivion * actor.willpower.current)
-		)
+	elseif formula == regenerationFormula.oblivion then
+		restored = base * 0.01 * (config.magickaReturnBaseOblivion + config.magickaReturnMultOblivion * actor.willpower.current)
 
-	elseif config.regenerationFormula == regenerationFormula.skyrim then
+	elseif formula == regenerationFormula.skyrim then
 		restored = base * config.magickaReturnSkyrim
 
 		if actor.inCombat then
 			restored = restored * config.combatPenaltySkyrim
 		end
-
-	elseif config.regenerationFormula == regenerationFormula.logarithmicWILL then
-		mwse.log("[Magicka Regeneration Suite]: unexpected if condition entered in %s.\nPlease report this to C3pa.", debug.traceback())
-		return 0
-
-	elseif config.regenerationFormula == regenerationFormula.logarithmicINT then
-		restored = restoredCache.logarithmicINT[actor.intelligence.current]
-		if not restored then
-			restoredCache.logarithmicINT[actor.intelligence.current] = math.max(
-				math.log(math.max(actor.intelligence.current, 0,01), config.INTBase)
-				* config.INTScale - config.INTb,
-				0
-			)
-			restored = restoredCache.logarithmicINT[actor.intelligence.current]
-		end
+	elseif formula == regenerationFormula.logarithmicINT then
+		restored = math.max(0,
+			math.log(math.max(actor.intelligence.current, 0.01), config.INTBase) * config.INTScale - config.INTb
+		)
 
 		if config.INTApplyCombatPenalty and actor.inCombat then
 			restored = restored * config.INTCombatPenalty
@@ -155,74 +125,72 @@ local function getMagickaRestoredPerSecond(actor, base)
 		if config.INTUseFatigueTerm then
 			restored = restored * actor:getFatigueTerm()
 		end
+	elseif formula == regenerationFormula.logarithmicWILL then
+		log:warn("Unsupported regeneration formula. Change your regeneration formula in the mod's MCM.")
+		return 0
 	end
 
 	if config.useDecay then
-		restored = restored * ( 1 - actor.magicka.current / base ) ^ config.decayExp
+		restored = restored * (1 - actor.magicka.current / base) ^ config.decayExp
 	end
 
 	return restored * config.regSpeedModifier
 end
 
-
---------- Exposed functions ---------
-
-
----Restores the apropriate amount of magicka to the `ref`.
+--- Restores the apropriate amount of magicka to the `ref`.
 ---@param ref tes3reference
 ---@param secondsPassed number? If `nil`, `secondsPassed = 1` is used.
----@param alot boolean? You should pass `true` here when restoring magicka after resting or travelling.
 ---@return number restoredAmount
-function common.restoreIf(ref, secondsPassed, alot)
+function common.restoreIf(ref, secondsPassed, restingOrTravelling)
 	secondsPassed = secondsPassed or 1
-	if stunted(ref) then return 0 end
+	if isStunted(ref) then return 0 end
 
 	local base = getMaxMagicka(ref)
 	local mobile = ref.mobile --[[@as tes3mobileActor]]
-	local magicka = mobile.magicka
-	local current = magicka.current
-	---@diagnostic disable-next-line param-type-mismatch
+	local magickaStat = mobile.magicka
+	local currentMagicka = magickaStat.current
+	--@diagnostic disable-next-line param-type-mismatch
 	local amount = getMagickaRestoredPerSecond(mobile, base) * secondsPassed
 
-	if alot then
+	if restingOrTravelling then
 		-- Don't restore more than maximum magicka
-		if current >= base then return 0 end
+		if currentMagicka >= base then return 0 end
 
-		amount = math.min(current + amount, base)
-		tes3.setStatistic({ reference = ref, statistic = magicka, current = amount })
+		amount = math.min(currentMagicka + amount, base)
+		tes3.setStatistic({ reference = ref, statistic = magickaStat, current = amount })
 		return amount
 	end
 
 
 	if config.vampireChanges and isVampire(ref) then
-		if PCinInterior() or isNight() then
+		if isPCinInterior() or isNight() then
 			amount = amount * ( 1 + config.nightBonus )
 		else
 			amount = amount * ( 1 - config.dayPenalty )
 		end
 	end
 	-- Don't restore more than maximum magicka
-	if (current >= base and amount > 0) then return 0 end
+	if (currentMagicka >= base and amount > 0) then return 0 end
 
 	-- Clamp positive total values to not overflow
 	-- Negative values shouldn't be clamped. If for example, a character just had Fortify Magicka effect worn off,
 	-- then their current magicka can be higher than maximum magicka. In such scenario, maxMagicka - currentMagicka
 	-- could be more negative than total yielding wrong result
 	if amount > 0 then
-		amount = math.min(amount, (base - current))
+		amount = math.min(amount, (base - currentMagicka))
 	end
 
-	tes3.modStatistic({ reference = ref, statistic = magicka, current = amount })
+	tes3.modStatistic({ reference = ref, statistic = magickaStat, current = amount })
 	return amount
 end
 
----Returns an iterator over all the NPCs, creatures, and optionally the player in all active cells. Used in a for loop.\
+--- Returns an iterator over all the NPCs, creatures, and optionally the player in all active cells.
 --- ```
 --- for ref in common.getActors(false) do
 ---     ...
 --- end
 --- ```
----@param includePlayer boolean|nil If `false`, the player will be excluded.
+---@param includePlayer boolean? If `false`, the player will be excluded.
 ---@return tes3reference[]
 function common.getActors(includePlayer)
 	---@diagnostic disable-next-line return-type-mismatch
@@ -239,12 +207,12 @@ function common.getActors(includePlayer)
 end
 
 ---Restores magicka to all actors in active cells excluding the player
----@param secondsPassed number|nil If `nil`, `secondsPassed = 1` is used.
----@param alot boolean|nil You should pass `true` here when restoring magicka after resting or travelling.
-function common.processActors(secondsPassed, alot)
+---@param secondsPassed number? If `nil`, `secondsPassed = 1` is used.
+---@param restingOrTravelling boolean?
+function common.processActors(secondsPassed, restingOrTravelling)
 	for actor in common.getActors(false) do
 		if actor.mobile then
-			common.restoreIf(actor, secondsPassed, alot)
+			common.restoreIf(actor, secondsPassed, restingOrTravelling)
 		end
 	end
 end
