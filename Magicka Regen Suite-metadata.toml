@@ -1,0 +1,16 @@
+[package]
+name = "Magicka Regen Suite"
+description = "Magicka regeneration mod for Morrowind."
+homepage = "https://www.nexusmods.com/morrowind/mods/49153"
+# repository = "https://github.com/C3pa/Morrowind-MWSE-mod-template"
+authors = [ "C3pa" ]
+version = "3.0.0"
+
+[dependencies.mwse]
+buildnumber = 4520
+
+[dependencies.mge-xe]
+version = ">=0.18.0"
+
+[tools.mwse]
+lua-mod = "Magicka Regen Suite"
