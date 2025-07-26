@@ -95,6 +95,8 @@ local function getMaxMagicka(reference)
 		})
 end
 
+local hoursToSeconds = 1 / 3600
+
 --- Returns the amount of magicka a reference would regenerate per second.
 ---@param actor tes3mobileActor
 ---@param base number The actor's base magicka.
@@ -132,6 +134,9 @@ local function getMagickaRestoredPerSecond(actor, base)
 		if config.INTUseFatigueTerm then
 			restored = restored * actor:getFatigueTerm()
 		end
+	elseif formula == regenerationFormula.rest then
+		local timescale = tes3.worldController.timescale.value
+		restored = tes3.findGMST(tes3.gmst.fRestMagicMult).value * actor.intelligence.current * timescale * hoursToSeconds
 	elseif formula == regenerationFormula.logarithmicWILL then
 		log:warn("Unsupported regeneration formula. Change your regeneration formula in the mod's MCM.")
 		return 0

@@ -15,6 +15,7 @@ Hover over individual settings to see more information.
 		{ label = "Oblivion style", value = 1 },
 		{ label = "Skyrim style", value = 2 },
 		{ label = "Logarithimic INT", value = 4 },
+		{ label = "Rest", value = 5 },
 	},
 
 	regenerationFormulasDescription = (
@@ -27,6 +28,8 @@ Hover over individual settings to see more information.
 
 		"In Morrowind style regeneration it scales with willpower, "..
 		"and your character's current fatigue. \n\n"..
+
+		"Rest forumula regenerates your magicka at the same rate as vanilla regenerates when resting or waiting\n\n"..
 
 		"In addition, Morrowind and Skyrim regeneration styles "..
 		"reduce magicka regeneration while in combat.\n\n"..
