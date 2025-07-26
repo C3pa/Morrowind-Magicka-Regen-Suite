@@ -78,6 +78,18 @@ local function getVampireMod(reference)
 	return 1 - config.dayPenalty
 end
 
+local fortifyMagickaRegenId = "herbert_fmr"
+local drainMagickaRegenId = "herbert_dmr"
+
+--- Compatibility with [Fortify Magicka Regeneration](https://www.nexusmods.com/morrowind/mods/54158) by Herbert.
+---@param reference any
+local function getFortifyMagickaRegenerationMod(reference)
+	local tempData = reference.tempData
+	local fortify = table.get(tempData, fortifyMagickaRegenId, 1)
+	local drain = table.get(tempData, drainMagickaRegenId, 1)
+	return fortify * drain
+end
+
 ---@param ref tes3reference
 ---@return boolean
 local function isStunted(ref)
@@ -173,6 +185,7 @@ function common.restoreIf(ref, secondsPassed, restingOrTravelling)
 	end
 
 	amount = amount * getVampireMod(ref)
+	amount = amount * getFortifyMagickaRegenerationMod(ref)
 
 	-- Don't restore more than maximum magicka
 	if (currentMagicka >= maxMagicka and amount > 0) then return 0 end
