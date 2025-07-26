@@ -2,18 +2,18 @@ local regenerationType = require("Magicka Regen Suite.regenerationType")
 
 local fileName = "Magicka Regen Suite"
 
----@class magickaRegenSuite.config
+---@class MagickaRegenSuite.config
 ---@field version string A [semantic version](https://semver.org/).
----@field default magickaRegenSuite.config Access to the default config can be useful in the MCM.
+---@field default MagickaRegenSuite.config Access to the default config can be useful in the MCM.
 ---@field fileName string
 local default = {
 	-- General Settings
-	regenerationFormula = regenerationType.morrowind,
+	regenerationFormula = regenerationType.morrowind --[[@as MagickaRegenSuite.regenerationType]],
 	useDecay = false,
 	decayExp = 2,
 	regSpeedModifier = 1,
 	vampireChanges = true,
-	dayPenalty = 1.25, -- TODO: set to 0.25
+	dayPenalty = 1.25, -- TODO: consider setting to 0.25
 	nightBonus = 0.25,
 	logLevel = mwse.logLevel.info --[[@as mwseLogger.logLevel]],
 

@@ -1,4 +1,5 @@
 local config = require("Magicka Regen Suite.config")
+local gmst = require("Magicka Regen Suite.modules.gmst")
 local text = require("Magicka Regen Suite.mcmText")
 
 local authors = {
@@ -65,7 +66,8 @@ local function registerModConfig()
 		generalCategory:createDropdown({
 			options = text.regenerationFormula,
 			description = text.regenerationFormulasDescription,
-			configKey = "regenerationFormula"
+			configKey = "regenerationFormula",
+			callback = gmst.updateGMSTs
 		})
 
 		newline(generalCategory)
