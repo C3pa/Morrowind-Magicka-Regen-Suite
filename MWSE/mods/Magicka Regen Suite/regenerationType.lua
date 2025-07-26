@@ -1,3 +1,4 @@
+---@enum MagickaRegenSuite.regenerationType
 return {
 	morrowind = 0,
 	oblivion = 1,
@@ -5,4 +6,5 @@ return {
 	-- This formula was removed.
 	logarithmicWILL = 3,
 	logarithmicINT = 4,
+	rest = 5,
 }

@@ -23,4 +23,5 @@ local function travelMagicka(e)
 	end
 end
 
+
 event.register(tes3.event.calcTravelPrice, travelMagicka)
