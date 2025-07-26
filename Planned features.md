@@ -1,0 +1,1 @@
+- Test if restoring magicka on training is accounted for.
