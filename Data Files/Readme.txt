@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.0.0
+Version: 3.0.1
 
 _________
 Contents
@@ -94,6 +94,9 @@ Feature: Implemented compatibility with Fortify Magicka Regeneration (https://ww
 Bugfix: Morrowind Style formula in one of the updates lost its fatigueTerm scaling which is now restored.
 Bugfix: Fixed an error that appeared when using travel services with companions.
 Task: Updates to the mod's MCM to use newer MWSE features. These allowed simplifying the settings page for users.
+
+3.0.1
+Bugfix: an error that could occur when checking if an actor is a vampire.
 ________
 Contact
 ________

@@ -49,7 +49,7 @@ local function isVampire(ref)
 	end
 
 	local obj = ref.baseObject and ref.baseObject or ref.object
-	if obj.head.vampiric then
+	if obj.head and obj.head.vampiric then
 		return true
 	end
 
