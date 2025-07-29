@@ -112,6 +112,7 @@ Thanks to Merlord for developing Ashfall. I learned how to make a mcm menu by re
 Thanks to Knu for coming up with a great decay formula in his Natural Magicka Regeneration
 Thanks to Greatness7 and NullCascade for fixing a bug in my code
 Thanks to Herbert for writing me a snippet needed to implement compatibility with Fortify Magicka Regeneration
+Thanks to Storm Atronach for proposing a fix released in v3.0.1
 Thanks to the following people from MMC Discord channel, who answered my questions:
 
 Axemagister
