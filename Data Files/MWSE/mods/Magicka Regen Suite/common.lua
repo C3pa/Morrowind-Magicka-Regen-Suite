@@ -1,3 +1,5 @@
+local fortifyMAX = include("FortifyMAX.interop")
+
 local regenerationFormula = require("Magicka Regen Suite.regenerationType")
 local config = require("Magicka Regen Suite.config")
 
@@ -100,11 +102,19 @@ end
 ---@param reference tes3reference
 ---@return number
 local function getMaxMagicka(reference)
-	return reference.mobile.magicka.base +
-		tes3.getEffectMagnitude({
-			reference = reference,
-			effect = tes3.effect.fortifyMagicka
-		})
+	local base = reference.mobile.magicka.base
+
+	-- Compatibility with [Fortify MAX](https://www.nexusmods.com/morrowind/mods/49825) by Necrolesian.
+	-- This mod will update the base value to include fortify magicka magnitude, so we don't have to
+	-- apply the magnitude twice.
+	if fortifyMAX and fortifyMAX.magicka then
+		return base
+	end
+
+	return base + tes3.getEffectMagnitude({
+		reference = reference,
+		effect = tes3.effect.fortifyMagicka
+	})
 end
 
 local hoursToSeconds = 1 / 3600
