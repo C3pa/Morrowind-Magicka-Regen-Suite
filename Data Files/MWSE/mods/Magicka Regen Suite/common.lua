@@ -159,6 +159,13 @@ local function getMagickaRestoredPerSecond(actor, base)
 	elseif formula == regenerationFormula.rest then
 		local timescale = tes3.worldController.timescale.value
 		restored = tes3.findGMST(tes3.gmst.fRestMagicMult).value * actor.intelligence.current * timescale * hoursToSeconds
+	elseif formula == regenerationFormula.oblivionRemastered then
+		local will = actor.willpower.current / config.ORB
+		restored = config.ORA * will * will + config.ORC * will
+
+		if actor.inCombat then
+			restored = restored * config.ORCombatPenalty
+		end
 	elseif formula == regenerationFormula.logarithmicWILL then
 		log:warn("Unsupported regeneration formula. Change your regeneration formula in the mod's MCM.")
 		return 0

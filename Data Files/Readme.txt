@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.1.0
+Version: 3.2.0
 
 _________
 Contents
