@@ -15,10 +15,10 @@ local function travelMagicka(e)
 		local hoursPassed = tes3.getSimulationTimestamp() - timeBeforeTravel
 		timeBeforeTravel = nil
 
-		common.restoreIf(tes3.player, hoursPassed * 3600, true)
+		common.attemptRestore(tes3.player, hoursPassed * 3600, true)
 
 		for _, companion in ipairs(e.companions or {}) do
-			common.restoreIf(companion.reference, hoursPassed * 3600, true)
+			common.attemptRestore(companion.reference, hoursPassed * 3600, true)
 		end
 	end
 end

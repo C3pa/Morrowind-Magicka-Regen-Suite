@@ -11,7 +11,7 @@ local function waitMagicka(e)
 	end
 
 	common.processActors(hoursPassed * 3600, true)
-	common.restoreIf(tes3.player, hoursPassed * 3600, true)
+	common.attemptRestore(tes3.player, hoursPassed * 3600, true)
 end
 
 

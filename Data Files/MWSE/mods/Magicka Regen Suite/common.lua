@@ -171,11 +171,11 @@ local function getMagickaRestoredPerSecond(actor, base)
 	return restored * config.regSpeedModifier
 end
 
---- Restores the apropriate amount of magicka to the `ref`.
+--- Restores the appropriate amount of magicka to the `ref`.
 ---@param ref tes3reference
 ---@param secondsPassed number? If `nil`, `secondsPassed = 1` is used.
 ---@return number restoredAmount
-function common.restoreIf(ref, secondsPassed, restingOrTravelling)
+function common.attemptRestore(ref, secondsPassed, restingOrTravelling)
 	secondsPassed = secondsPassed or 1
 	if isStunted(ref) then return 0 end
 
@@ -236,13 +236,26 @@ function common.getActors(includePlayer)
 end
 
 ---Restores magicka to all actors in active cells excluding the player
----@param secondsPassed number? If `nil`, `secondsPassed = 1` is used.
----@param restingOrTravelling boolean?
-function common.processActors(secondsPassed, restingOrTravelling)
+---@param secondsPassed? number If `nil`, `secondsPassed = 1` is used.
+---@param restingOrTravelling? boolean
+---@param lastCast? table<tes3reference, number>
+function common.processActors(secondsPassed, restingOrTravelling, lastCast)
+	lastCast = lastCast or {}
+	local clock = os.clock()
+	---@param actor tes3reference
 	for actor in common.getActors(false) do
-		if actor.mobile then
-			common.restoreIf(actor, secondsPassed, restingOrTravelling)
+		if not actor.mobile then
+			goto continue
 		end
+
+		local castClock = lastCast[actor]
+		if castClock and (clock < castClock + config.delayCast)  then
+			goto continue
+		end
+
+		common.attemptRestore(actor, secondsPassed, restingOrTravelling)
+
+		:: continue ::
 	end
 end
 
