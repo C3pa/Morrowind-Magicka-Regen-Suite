@@ -58,12 +58,8 @@ local function registerModConfig()
 			description = text.regenerationTypesDescription
 		})
 
-		generalCategory:createInfo({
-			text = "The magicka regeneration formula I want to use...",
-			description = text.regenerationFormulasDescription
-		})
-
 		generalCategory:createDropdown({
+			label = "The magicka regeneration formula I want to use...",
 			options = text.regenerationFormula,
 			description = text.regenerationFormulasDescription,
 			configKey = "regenerationFormula",
@@ -77,6 +73,18 @@ local function registerModConfig()
 			min = 0.01,
 			max = 2,
 			configKey = "regSpeedModifier"
+		})
+
+		newline(generalCategory)
+		generalCategory:createSlider({
+			label = "Regeneration delay %s seconds after cast.",
+			description = text.delayCast,
+			min = 0,
+			max = 10,
+			step = 0.1,
+			jump = 1,
+			decimalPlaces = 1,
+			configKey = "delayCast"
 		})
 
 		local decay = page:createCategory({
@@ -260,20 +268,71 @@ local function registerModConfig()
 		})
 	end
 
+	do -- Oblivion Remastered settings page
+		local page = template:createSideBarPage({
+			label = "Oblivion Remastered",
+			showReset = true
+		})
+		addSideBar(page)
+
+		page:createCategory({ label = "\nFormula:" })
+		page:createInfo({ text = text.ORformula })
+
+		page:createSlider({
+			label = "a = %s",
+			min = 0.1,
+			max = 4.0,
+			step = 0.1,
+			jump = 0.5,
+			decimalPlaces = 1,
+			configKey = "ORA"
+		})
+
+		newline(page)
+		page:createSlider({
+			label = "b = %s",
+			min = 1,
+			max = 500,
+			step = 1,
+			jump = 10,
+			configKey = "ORB"
+		})
+
+		newline(page)
+		page:createSlider({
+			label = "c = %s",
+			min = 0.1,
+			max = 3.0,
+			step = 0.1,
+			jump = 0.5,
+			decimalPlaces = 1,
+			configKey = "ORC"
+		})
+
+		newline(page)
+		page:createPercentageSlider({
+			label = "Combat Penalty",
+			description = text.combatPenalty,
+			min = 0,
+			max = 1,
+			configKey = "ORCombatPenalty"
+		})
+	end
+
 	do -- Logarithmic INT settings page
-		local logarithmicINTPage = template:createSideBarPage({
+		local page = template:createSideBarPage({
 			label = "Logarithmic INT",
 			showReset = true
 		})
-		addSideBar(logarithmicINTPage)
+		addSideBar(page)
 
-		logarithmicINTPage:createCategory({
-			label = "\nLogarithmic Intelligence formula",
+		page:createCategory({
+			label = "\nFormula:",
 			description = text.INTDescription
 		})
-		logarithmicINTPage:createInfo({ text = text.INTFormula })
+		page:createInfo({ text = text.INTFormula })
 
-		logarithmicINTPage:createSlider({
+		page:createSlider({
 			label = "base = %s",
 			description = text.INTBase,
 			min = 2,
@@ -282,8 +341,8 @@ local function registerModConfig()
 			configKey = "INTBase"
 		})
 
-		newline(logarithmicINTPage)
-		logarithmicINTPage:createSlider({
+		newline(page)
+		page:createSlider({
 			label = "scale = %s",
 			description = text.INTScale,
 			min = 0.7,
@@ -294,8 +353,8 @@ local function registerModConfig()
 			configKey = "INTScale"
 		})
 
-		newline(logarithmicINTPage)
-		logarithmicINTPage:createSlider({
+		newline(page)
+		page:createSlider({
 			label = "cap = %s",
 			description = text.INTCap,
 			min = 0,
@@ -304,14 +363,14 @@ local function registerModConfig()
 			configKey = "INTCap"
 		})
 
-		newline(logarithmicINTPage)
-		logarithmicINTPage:createYesNoButton({
+		newline(page)
+		page:createYesNoButton({
 			label = "Slower magicka regeneration while in combat?",
 			description = text.combatPenaltyGeneral,
 			configKey = "INTApplyCombatPenalty"
 		})
 
-		logarithmicINTPage:createPercentageSlider({
+		page:createPercentageSlider({
 			label = "Combat Penalty",
 			description = text.combatPenalty,
 			min = 0,
@@ -319,8 +378,8 @@ local function registerModConfig()
 			configKey = "INTCombatPenalty"
 		})
 
-		newline(logarithmicINTPage)
-		logarithmicINTPage:createYesNoButton{
+		newline(page)
+		page:createYesNoButton{
 			label = "Scale magicka regeneration speed with current fatigue?",
 			description = text.fatigueTermDescription,
 			configKey = "INTUseFatigueTerm"

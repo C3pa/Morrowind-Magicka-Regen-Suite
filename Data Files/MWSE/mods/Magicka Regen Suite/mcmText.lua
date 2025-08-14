@@ -16,6 +16,7 @@ Hover over individual settings to see more information.
 		{ label = "Skyrim style", value = 2 },
 		{ label = "Logarithimic INT", value = 4 },
 		{ label = "Rest", value = 5 },
+		{ label = "Oblivion Remastered", value = 6 }
 	},
 
 	regenerationFormulasDescription = (
@@ -31,7 +32,9 @@ Hover over individual settings to see more information.
 
 		"Rest forumula regenerates your magicka at the same rate as vanilla regenerates when resting or waiting\n\n"..
 
-		"In addition, Morrowind and Skyrim regeneration styles "..
+		"In Oblivion Remastered regeneration scales with willpower.\n\n" ..
+
+		"In addition, Morrowind, Skyrim and Oblivion Remastered regeneration styles "..
 		"reduce magicka regeneration while in combat.\n\n"..
 
 		"To use magicka regeneration formula as in "..
@@ -57,16 +60,14 @@ Hover over individual settings to see more information.
 		"regen slow down a lot sooner. When exp = 1 then magicka regeneration speed decays linearly."
 	),
 
-	regenerationSpeedModifier = (
-		"\nUse this to quickly adjust regeneration speed of your "..
-		"chosen regeneration style. At 100% it has no effect.\n\n"..
+	regenerationSpeedModifier = "\nUse this to quickly adjust regeneration speed of your \z
+		chosen regeneration style. At 100% it has no effect.\n\n\z
+		For much more precise control over individual coefficients, please see each page.",
 
-		"For much more precise control over individual coefficients, please see each page."
-	),
+	delayCast = "\nThe amount of time magicka won't regenerate after casting \z
+		a spell. This feature is inspired by Oblivion Remastered.",
 
-	combatPenaltyGeneral = (
-		"\nThis feature will make magicka regeneration slower in combat by a configurable amount."
-	),
+	combatPenaltyGeneral = "\nThis feature will make magicka regeneration slower in combat by a configurable amount.",
 
 	combatPenalty = (
 		"\nMagicka regeneration is lowered in combat. This setting controls how much it is slower in battle. \n\n"..
@@ -170,6 +171,13 @@ Hover over individual settings to see more information.
 		"1 % - magicka regenerates 1 % of its standard regeneration speed\n\n"..
 
 		"0 % - no magicka regeneration while in combat"
+	),
+
+	-- Oblivion Remastered settings page
+	ORformula = (
+		"Magicka points regenerated per second\n\n"..
+
+		" = a x (Willpower / b) ^ 2 + c x (Willpower / b)"
 	),
 
 	-- Logarithmic INT settings page

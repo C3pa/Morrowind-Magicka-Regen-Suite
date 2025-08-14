@@ -15,7 +15,8 @@ local default = {
 	vampireChanges = true,
 	dayPenalty = 1.25, -- TODO: consider setting to 0.25
 	nightBonus = 0.25,
-	logLevel = mwse.logLevel.info --[[@as mwseLogger.logLevel]],
+	logLevel = mwse.logLevel.info,
+	delayCast = 2,
 
 	-- Morrowind Regeneration
 	baseMorrowind = 5,
@@ -38,17 +39,23 @@ local default = {
 	INTApplyCombatPenalty = true,
 	INTCombatPenalty = 0.33,
 	INTUseFatigueTerm = true,
+
+	-- Oblivion Remastered
+	ORA = 2,
+	ORB = 50,
+	ORC = 1.5,
+	ORCombatPenalty = 0.5
 }
 
 local config = mwse.loadConfig(fileName, default)
-config.version = "3.1.0"
+config.version = "3.2.0"
 config.default = default
 config.fileName = fileName
 
 -- TODO: remove
 -- Handle removed regeneration type
 if config.regenerationFormula == regenerationType.logarithmicWILL then
-	config.regenerationFormula = regenerationType.morrowind
+	config.regenerationFormula = regenerationType.morrowind --[[@as MagickaRegenSuite.regenerationType]]
 end
 
 return config

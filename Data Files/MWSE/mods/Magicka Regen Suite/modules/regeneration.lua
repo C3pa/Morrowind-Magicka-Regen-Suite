@@ -28,7 +28,7 @@ local function playerRegen()
 	local canCastClock = (lastCast[tes3.player] or 0) + config.delayCast
 	local clock = os.clock()
 	if clock < canCastClock then
-		log:debug("Current clock = %s, canCastClock = %s", clock, canCastClock)
+		log:trace("Current clock = %s, canCastClock = %s", clock, canCastClock)
 		return
 	end
 	common.attemptRestore(tes3.player, PC_REGEN_RATE)

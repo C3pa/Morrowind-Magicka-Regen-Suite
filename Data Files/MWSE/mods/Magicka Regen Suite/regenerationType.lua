@@ -7,4 +7,5 @@ return {
 	logarithmicWILL = 3,
 	logarithmicINT = 4,
 	rest = 5,
+	oblivionRemastered = 6,
 }

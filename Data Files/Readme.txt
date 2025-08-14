@@ -100,6 +100,11 @@ Bugfix: an error that could occur when checking if an actor is a vampire.
 
 3.1.0
 Feature: Implemented compatibility with Fortify MAX (https://www.nexusmods.com/morrowind/mods/49825).
+
+3.2.0
+Feature: Implemented regeneration delay after casting a spell. This is inspired by Oblivion Remastered.
+Feature: Implemented magicka regeneration formula from Oblivion Remastered.
+
 ________
 Contact
 ________
@@ -109,14 +114,14 @@ ________
 Credits
 ________
 Thanks to Anumaril21 for creating the original MWSE Magicka Regen.
-Thanks to hhuuggss for suggesting to clamp magicka, the comment section of MWSE Magicka Regen
-Thanks to Necrolesian for the right calculation of time spent resting when the rest had been interrupted, comment section of MWSE Magicka Regen.
+Thanks to hhuuggss for suggesting to clamp magicka, the comment section of MWSE Magicka Regen.
+Thanks to Necrolesian for the right calculation of time spent resting when the rest had been interrupted, the comment section of MWSE Magicka Regen.
 Thanks to Merlord for developing Ashfall. I learned how to make an mcm menu by reading his code.
 Thanks to Knu for coming up with a great decay formula in his Natural Magicka Regeneration.
 Thanks to Greatness7 and NullCascade for fixing a bug in my code.
 Thanks to Herbert for writing me a snippet needed to implement compatibility with Fortify Magicka Regeneration.
 Thanks to Storm Atronach for proposing a fix released in v3.0.1.
-Thanks to the following people from MMC Discord channel, who answered my questions:
+Thanks to the following people from the MMC Discord channel, who answered my questions:
 
 Axemagister
 Greatness7
@@ -126,6 +131,6 @@ Pinky
 tewlwolow
 NullCascade
 
-Thanks to UESP and OpenMW for game formulas I read on their pages.
+Thanks to UESP and OpenMW for the game formulas I read on their pages.
 Thanks to Dieter Steffmann for his cool and free Morris Roman font.
-Thanks to Brucoms for developing the TES3 Readme Generator this readme was made from.
+Thanks to Brucoms for developing the TES3 Readme Generator, from which this readme was made.
