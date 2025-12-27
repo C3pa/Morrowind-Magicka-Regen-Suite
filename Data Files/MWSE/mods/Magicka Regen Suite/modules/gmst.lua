@@ -1,28 +1,47 @@
 local config = require("Magicka Regen Suite.config")
 local regenerationType = require("Magicka Regen Suite.regenerationType")
 
+local log = mwse.Logger.new()
+
 
 ---@type table<MagickaRegenSuite.regenerationType, table>
 local data = {
 	[regenerationType.morrowind] = {
 		[tes3.gmst.fRestMagicMult] = 0,
 		-- The default is: "Affects your ability to resist magic, and your maximum Fatigue."
-		[tes3.gmst.sWilDesc] = "Affects your ability to resist magic, your natural magicka regeneration, and your maximum Fatigue."
+		[tes3.gmst.sWilDesc] =
+		"Affects your ability to resist magic, your natural Magicka regeneration, and your maximum Fatigue."
 	},
 	[regenerationType.oblivion] = {
 		[tes3.gmst.fRestMagicMult] = 0,
-		[tes3.gmst.sWilDesc] = "Affects your ability to resist magic, your natural magicka regeneration, and your maximum Fatigue."
+		[tes3.gmst.sWilDesc] =
+		"Affects your ability to resist magic, your natural Magicka regeneration, and your maximum Fatigue.",
+		-- The default is: "Determines your maximum amount of Magicka."
+		[tes3.gmst.sIntDesc] =
+		"Determines your maximum amount of Magicka and indirectly your natural Magicka regeneration."
 	},
 	[regenerationType.skyrim] = {
 		[tes3.gmst.fRestMagicMult] = 0,
-		-- The default is: "Determines your maximum amount of Magicka."
-		[tes3.gmst.sIntDesc] = "Determines your maximum amount of Magicka and indirectly your natural magicka regeneration."
+		[tes3.gmst.sIntDesc] =
+		"Determines your maximum amount of Magicka and indirectly your natural Magicka regeneration."
 	},
 	[regenerationType.logarithmicINT] = {
 		[tes3.gmst.fRestMagicMult] = 0,
-		[tes3.gmst.sIntDesc] = "Determines your maximum amount of Magicka and your natural magicka regeneration."
+		[tes3.gmst.sIntDesc] = "Determines your maximum amount of Magicka and your natural Magicka regeneration."
 	},
+	[regenerationType.rest] = {
+		[tes3.gmst.sIntDesc] = "Determines your maximum amount of Magicka and your natural Magicka regeneration."
+	},
+	[regenerationType.oblivionRemastered] = {
+		[tes3.gmst.fRestMagicMult] = 0,
+		[tes3.gmst.sWilDesc] =
+		"Affects your ability to resist magic, your natural Magicka regeneration, and your maximum Fatigue."
+	}
 }
+
+for regenName, regen in pairs(regenerationType) do
+	log:assert(data[regen], "No gmst adjustments defined for: " .. regenName)
+end
 
 -- An array of GMST ids this mod changes dynamically. These are the ones that appear in the table above.
 local adjustedGMSTs = {
@@ -36,9 +55,10 @@ local function saveDefaults()
 		defaultValues[id] = tes3.findGMST(id).value
 	end
 
-	-- The following GMST is changed unconditionally.
+	-- The following GMSTs are changed unconditionally.
 	-- The default is: "Used to cast spells. Magicka is naturally restored by resting."
-	tes3.findGMST(tes3.gmst.sMagDesc).value = "Used to cast spells. Magicka regenerates naturally and is restored by resting."
+	tes3.findGMST(tes3.gmst.sMagDesc).value =
+	"Used to cast spells. Magicka regenerates naturally and is restored by resting."
 end
 
 -- Needs to have higher priority than the function in main.lua that calls this.updateGMSTs
