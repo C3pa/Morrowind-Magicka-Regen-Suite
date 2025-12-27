@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.2.0
+Version: 3.2.1
 
 _________
 Contents
@@ -23,7 +23,7 @@ MWSE 2+
 ____________
 Description
 ____________
-Magicka Regeneration Suite provides four configurable magicka regeneration types: as in Oblivion and Skyrim, the other three are brand new: Morrowind style, logarithmic INT and realtime at rest rate. Characters with stunted magicka don't regenerate magicka. Magicka is restored even while waiting in the wilderness, sleeping in a bed or traveling by boat, Silt Strider, or any other mod-added travel service will also regenerate magicka. Vampires get lose magicka in broad daylight, while they get a bonus magicka regeneration during the night or indoors.
+Magicka Regeneration Suite provides six configurable magicka regeneration types: as in Oblivion, Oblivion Remastered and Skyrim, the other three are brand new: Morrowind style, logarithmic INT and realtime at rest rate. Characters with stunted magicka don't regenerate magicka. Magicka is restored even while waiting in the wilderness, sleeping in a bed or traveling by boat, Silt Strider, or any other mod-added travel service will also regenerate magicka. Vampires lose magicka in broad daylight, while they get a bonus to magicka regeneration when they aren't in broad daylight (during night or indoors).
 
 All of the mod's features can be configured in the mod configuration menu.
 
@@ -96,7 +96,7 @@ Bugfix: Fixed an error that appeared when using travel services with companions.
 Task: Updates to the mod's MCM to use newer MWSE features. These allowed simplifying the settings page for users.
 
 3.0.1
-Bugfix: an error that could occur when checking if an actor is a vampire.
+Bugfix: Fixed an error that could occur when checking if an actor is a vampire.
 
 3.1.0
 Feature: Implemented compatibility with Fortify MAX (https://www.nexusmods.com/morrowind/mods/49825).
@@ -105,6 +105,8 @@ Feature: Implemented compatibility with Fortify MAX (https://www.nexusmods.com/m
 Feature: Implemented regeneration delay after casting a spell. This is inspired by Oblivion Remastered.
 Feature: Implemented magicka regeneration formula from Oblivion Remastered.
 
+3.2.1
+Bugfix: Fixed an error that occurred when adjusting some GMST values when using Oblivion Remastered regen formula.
 ________
 Contact
 ________
