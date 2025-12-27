@@ -121,9 +121,9 @@ local hoursToSeconds = 1 / 3600
 
 --- Returns the amount of magicka a reference would regenerate per second.
 ---@param actor tes3mobileActor
----@param base number The actor's base magicka.
+---@param baseMagicka number The actor's base magicka.
 ---@return number result
-local function getMagickaRestoredPerSecond(actor, base)
+local function getMagickaRestoredPerSecond(actor, baseMagicka)
 	local restored
 	local formula = config.regenerationFormula
 
@@ -137,9 +137,9 @@ local function getMagickaRestoredPerSecond(actor, base)
 		end
 	elseif formula == regenerationFormula.oblivion then
 		restored = config.magickaReturnBaseOblivion + config.magickaReturnMultOblivion * actor.willpower.current
-		restored = restored * base * 0.01
+		restored = restored * baseMagicka * 0.01
 	elseif formula == regenerationFormula.skyrim then
-		restored = base * config.magickaReturnSkyrim
+		restored = baseMagicka * config.magickaReturnSkyrim
 
 		if actor.inCombat then
 			restored = restored * config.combatPenaltySkyrim
@@ -158,7 +158,8 @@ local function getMagickaRestoredPerSecond(actor, base)
 		end
 	elseif formula == regenerationFormula.rest then
 		local timescale = tes3.worldController.timescale.value
-		restored = tes3.findGMST(tes3.gmst.fRestMagicMult).value * actor.intelligence.current * timescale * hoursToSeconds
+		local restMult = tes3.findGMST(tes3.gmst.fRestMagicMult).value
+		restored = restMult * actor.intelligence.current * timescale * hoursToSeconds
 	elseif formula == regenerationFormula.oblivionRemastered then
 		local will = actor.willpower.current / config.ORB
 		restored = config.ORA * will * will + config.ORC * will
@@ -166,13 +167,13 @@ local function getMagickaRestoredPerSecond(actor, base)
 		if actor.inCombat then
 			restored = restored * config.ORCombatPenalty
 		end
-	elseif formula == regenerationFormula.logarithmicWILL then
-		log:warn("Unsupported regeneration formula. Change your regeneration formula in the mod's MCM.")
+	else
+		log:warn("Unsupported regeneration formula No. %s. Change your regeneration formula in the mod's MCM.", formula)
 		return 0
 	end
 
 	if config.useDecay then
-		restored = restored * (1 - actor.magicka.current / base) ^ config.decayExp
+		restored = restored * (1 - actor.magicka.current / baseMagicka) ^ config.decayExp
 	end
 
 	return restored * config.regSpeedModifier
@@ -256,7 +257,7 @@ function common.processActors(secondsPassed, restingOrTravelling, lastCast)
 		end
 
 		local castClock = lastCast[actor]
-		if castClock and (clock < castClock + config.delayCast)  then
+		if castClock and (clock < castClock + config.delayCast) then
 			goto continue
 		end
 
