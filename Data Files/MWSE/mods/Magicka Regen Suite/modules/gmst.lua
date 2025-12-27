@@ -45,7 +45,7 @@ end
 
 -- An array of GMST ids this mod changes dynamically. These are the ones that appear in the table above.
 local adjustedGMSTs = {
-	tes3.gmst.sWilDesc, tes3.gmst.sIntDesc
+	tes3.gmst.fRestMagicMult, tes3.gmst.sWilDesc, tes3.gmst.sIntDesc
 }
 -- We save these on initialized
 local defaultValues = {}
