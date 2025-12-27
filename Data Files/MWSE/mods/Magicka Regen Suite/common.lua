@@ -179,11 +179,40 @@ local function getMagickaRestoredPerSecond(actor, baseMagicka)
 	return restored * config.regSpeedModifier
 end
 
+
+
+---@type table<tes3reference, number>
+local cooldowns = {}
+
+---@param e spellMagickaUseEventData
+local function monitorCasting(e)
+	cooldowns[e.caster] = os.clock() + config.delayCast
+end
+event.register(tes3.event.spellMagickaUse, monitorCasting)
+
+---@param e referenceDeactivatedEventData
+local function onRefDeactivated(e)
+	cooldowns[e.reference] = nil
+end
+event.register(tes3.event.referenceDeactivated, onRefDeactivated)
+
+-- Performs is an actor regenerate magicka due to cooldown.
+---@param reference tes3reference
+local function isOnCooldown(reference)
+	local regenEligibleClock = cooldowns[reference] or 0
+	if os.clock() < regenEligibleClock then
+		return true
+	end
+	return false
+end
+
+
 --- Restores the appropriate amount of magicka to the `ref`.
 ---@param ref tes3reference
 ---@param secondsPassed number? If `nil`, `secondsPassed = 1` is used.
 ---@return number restoredAmount
 function common.attemptRestore(ref, secondsPassed, restingOrTravelling)
+	if isOnCooldown(ref) then return 0 end
 	secondsPassed = secondsPassed or 1
 	if isStunted(ref) then return 0 end
 
@@ -246,23 +275,14 @@ end
 ---Restores magicka to all actors in active cells excluding the player
 ---@param secondsPassed? number If `nil`, `secondsPassed = 1` is used.
 ---@param restingOrTravelling? boolean
----@param lastCast? table<tes3reference, number>
-function common.processActors(secondsPassed, restingOrTravelling, lastCast)
-	lastCast = lastCast or {}
-	local clock = os.clock()
+function common.processActors(secondsPassed, restingOrTravelling)
 	---@param actor tes3reference
 	for actor in common.getActors(false) do
 		if not actor.mobile then
 			goto continue
 		end
 
-		local castClock = lastCast[actor]
-		if castClock and (clock < castClock + config.delayCast) then
-			goto continue
-		end
-
 		common.attemptRestore(actor, secondsPassed, restingOrTravelling)
-
 		:: continue ::
 	end
 end
