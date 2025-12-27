@@ -1,4 +1,7 @@
 local common = require("Magicka Regen Suite.common")
+local config = require("Magicka Regen Suite.config")
+local regenType = require("Magicka Regen Suite.regenerationType")
+
 
 local timeBeforeTravel
 
@@ -7,6 +10,8 @@ local timeBeforeTravel
 -- Player's companions do get regeneration if the player has any.
 ---@param e calcTravelPriceEventData
 local function travelMagicka(e)
+	if config.regenerationFormula == regenType.rest then return end
+
 	if not tes3.mobilePlayer.traveling then -- Get time before traveling
 		timeBeforeTravel = tes3.getSimulationTimestamp()
 	end
