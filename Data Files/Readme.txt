@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.2.1
+Version: 3.2.2
 
 _________
 Contents
@@ -107,6 +107,10 @@ Feature: Implemented magicka regeneration formula from Oblivion Remastered.
 
 3.2.1
 Bugfix: Fixed an error that occurred when adjusting some GMST values when using Oblivion Remastered regen formula.
+
+3.2.2
+Bugfix: Fixed an error where magicka regenerated at twice the speed during resting when resting formula was selected.
+Bigfix: Make regeneration cooldown start at the start of spell casting animation instead at the end.
 ________
 Contact
 ________
