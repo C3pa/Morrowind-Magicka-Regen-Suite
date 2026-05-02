@@ -109,8 +109,8 @@ Feature: Implemented magicka regeneration formula from Oblivion Remastered.
 Bugfix: Fixed an error that occurred when adjusting some GMST values when using Oblivion Remastered regen formula.
 
 3.2.2
-Bugfix: Fixed an error where magicka regenerated at twice the speed during resting when resting formula was selected.
-Bigfix: Make regeneration cooldown start at the start of spell casting animation instead at the end.
+Bugfix: Fixed an error where magicka regenerated at twice the speed during resting when rest formula was selected.
+Bugfix: Make regeneration cooldown start at the start of spell casting animation instead at the end.
 ________
 Contact
 ________
