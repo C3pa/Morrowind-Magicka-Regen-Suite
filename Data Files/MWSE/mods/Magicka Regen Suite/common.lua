@@ -46,6 +46,7 @@ local vampireScriptIDs = {
 ---@param ref tes3reference Can be player, or NPC.
 ---@return boolean result
 local function isVampire(ref)
+	-- Consider just doing: https://mwse.github.io/MWSE/types/tes3mobileNPC/#hasvampirism
 	if ref == tes3.player and tes3.findGlobal("PCVampire").value == PCVampireValue then
 		return true
 	end

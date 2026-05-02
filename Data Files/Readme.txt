@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.2.2
+Version: 3.2.3
 
 _________
 Contents
@@ -111,6 +111,9 @@ Bugfix: Fixed an error that occurred when adjusting some GMST values when using 
 3.2.2
 Bugfix: Fixed an error where magicka regenerated at twice the speed during resting when rest formula was selected.
 Bugfix: Make regeneration cooldown start at the start of spell casting animation instead at the end.
+
+3.2.3
+Bugfix: Regeneration during resting/waiting is now correctly scaled with timescale.
 ________
 Contact
 ________
@@ -127,16 +130,7 @@ Thanks to Knu for coming up with a great decay formula in his Natural Magicka Re
 Thanks to Greatness7 and NullCascade for fixing a bug in my code.
 Thanks to Herbert for writing me a snippet needed to implement compatibility with Fortify Magicka Regeneration.
 Thanks to Storm Atronach for proposing a fix released in v3.0.1.
-Thanks to the following people from the MMC Discord channel, who answered my questions:
-
-Axemagister
-Greatness7
-OperatorJack
-O. E. Academicus
-Pinky
-tewlwolow
-NullCascade
-
+Thanks to the following people from the MMC Discord channel, who answered my questions at various stages of development: Axemagister, Greatness7, NullCascade, OperatorJack, O.E. Academicus, Pinky, tewlwolow.
 Thanks to UESP and OpenMW for the game formulas I read on their pages.
 Thanks to Dieter Steffmann for his cool and free Morris Roman font.
 Thanks to Brucoms for developing the TES3 Readme Generator, from which this readme was made.
