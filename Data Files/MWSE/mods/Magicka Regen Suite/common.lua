@@ -225,7 +225,7 @@ function common.attemptRestore(ref, secondsPassed, restingOrTravelling)
 	if restingOrTravelling then
 		-- Don't restore more than maximum magicka
 		if currentMagicka >= maxMagicka then return 0 end
-
+		amount = amount / tes3.worldController.timescale.value
 		amount = math.min(currentMagicka + amount, maxMagicka)
 		tes3.setStatistic({ reference = ref, statistic = magickaStat, current = amount })
 		return amount
