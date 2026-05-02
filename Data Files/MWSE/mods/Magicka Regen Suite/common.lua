@@ -119,6 +119,7 @@ local function getMaxMagicka(reference)
 end
 
 local hoursToSeconds = 1 / 3600
+local restMult ---@type tes3gameSetting
 
 --- Returns the amount of magicka a reference would regenerate per second.
 ---@param actor tes3mobileActor
@@ -159,8 +160,8 @@ local function getMagickaRestoredPerSecond(actor, baseMagicka)
 		end
 	elseif formula == regenerationFormula.rest then
 		local timescale = tes3.worldController.timescale.value
-		local restMult = tes3.findGMST(tes3.gmst.fRestMagicMult).value
-		restored = restMult * actor.intelligence.current * timescale * hoursToSeconds
+		restMult = restMult or tes3.findGMST(tes3.gmst.fRestMagicMult)
+		restored = restMult.value * actor.intelligence.current * timescale * hoursToSeconds
 	elseif formula == regenerationFormula.oblivionRemastered then
 		local will = actor.willpower.current / config.ORB
 		restored = config.ORA * will * will + config.ORC * will
@@ -197,7 +198,7 @@ local function onRefDeactivated(e)
 end
 event.register(tes3.event.referenceDeactivated, onRefDeactivated)
 
--- Performs is an actor regenerate magicka due to cooldown.
+-- Performs a check if an actor can regenerate magicka due to spellcasting cooldown.
 ---@param reference tes3reference
 local function isOnCooldown(reference)
 	local regenEligibleClock = cooldowns[reference] or 0
@@ -214,13 +215,15 @@ end
 ---@return number restoredAmount
 function common.attemptRestore(ref, secondsPassed, restingOrTravelling)
 	if isOnCooldown(ref) then return 0 end
-	secondsPassed = secondsPassed or 1
 	if isStunted(ref) then return 0 end
 
+	secondsPassed = secondsPassed or 1
 	local maxMagicka = getMaxMagicka(ref)
 	local mobile = ref.mobile --[[@as tes3mobileActor]]
 	local magickaStat = mobile.magicka
 	local currentMagicka = magickaStat.current
+	-- Amount can be negative in certain conditions such as being a vampire during the day.
+	-- So, that's the reason we can't just early-out on maximum magicka.
 	local amount = getMagickaRestoredPerSecond(mobile, maxMagicka) * secondsPassed
 
 	if restingOrTravelling then
@@ -251,40 +254,16 @@ function common.attemptRestore(ref, secondsPassed, restingOrTravelling)
 	return amount
 end
 
---- Returns an iterator over all the NPCs, creatures, and optionally the player in all active cells.
---- ```
---- for ref in common.getActors(false) do
----     ...
---- end
---- ```
----@param includePlayer boolean? If `false`, the player will be excluded.
----@return tes3reference[]
-function common.getActors(includePlayer)
-	---@diagnostic disable-next-line return-type-mismatch
-	return coroutine.wrap(function()
-		for _, cell in pairs(tes3.getActiveCells()) do
-			for ref in cell:iterateReferences({ tes3.objectType.npc, tes3.objectType.creature }) do
-				coroutine.yield(ref)
-			end
-		end
-		if includePlayer then
-			coroutine.yield(tes3.player)
-		end
-	end)
-end
-
 ---Restores magicka to all actors in active cells excluding the player
 ---@param secondsPassed? number If `nil`, `secondsPassed = 1` is used.
 ---@param restingOrTravelling? boolean
 function common.processActors(secondsPassed, restingOrTravelling)
-	---@param actor tes3reference
-	for actor in common.getActors(false) do
-		if not actor.mobile then
-			goto continue
+	for _, cell in pairs(tes3.getActiveCells()) do
+		for ref in cell:iterateReferences({ tes3.objectType.npc, tes3.objectType.creature }) do
+			if ref.mobile and not ref.mobile.isDead then
+				common.attemptRestore(ref, secondsPassed, restingOrTravelling)
+			end
 		end
-
-		common.attemptRestore(actor, secondsPassed, restingOrTravelling)
-		:: continue ::
 	end
 end
 
