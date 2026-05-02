@@ -1,7 +1,7 @@
 				Magicka Regeneration Suite
 				By C3pa
 
-Version: 3.2.3
+Version: 3.3.0
 
 _________
 Contents
@@ -114,6 +114,9 @@ Bugfix: Make regeneration cooldown start at the start of spell casting animation
 
 3.2.3
 Bugfix: Regeneration during resting/waiting is now correctly scaled with timescale.
+
+3.3.0
+Feature: Code optimizations thanks to StormAtronach!
 ________
 Contact
 ________
